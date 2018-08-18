@@ -319,7 +319,7 @@ public class CameraActivity extends Activity {
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         Volley.newRequestQueue(this).add(jsonObjectRequest);
-        
+
 
     }
 
