@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "194481530588",
+    "firebase_url": "https://the-med-app-75ef9.firebaseio.com",
+    "project_id": "the-med-app-75ef9",
+    "storage_bucket": "the-med-app-75ef9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:194481530588:android:3f9e6f2698044ae0",
+        "android_client_info": {
+          "package_name": "com.dentalcheck.themedapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "194481530588-gidhtof3vupktt62jupqvp44nth0jm7r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dentalcheck.themedapp",
+            "certificate_hash": "38e02222a478229a4190c31b981bc59c5ffa4fad"
+          }
+        },
+        {
+          "client_id": "194481530588-bobcknp6u0jlj2oskreorr3fdqdr82af.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvkb1G-ri05da7HLTeQNH_BvXwt-PjBdM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "194481530588-bobcknp6u0jlj2oskreorr3fdqdr82af.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

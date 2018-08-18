@@ -1,0 +1,76 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:weightSum="3"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/imgPrv"
+        android:layout_width="120dp"
+        android:layout_weight=".4"
+        android:layout_height="120dp" />
+
+    <LinearLayout
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_weight="1.9"
+        android:layout_width="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="14dp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/parcelName"
+            android:paddingTop="15px"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="label"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/imageFor"
+            android:layout_marginTop="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="parcel#Id" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/capture"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        android:layout_gravity="center_vertical"
+        android:background="@null"
+        android:src="@drawable/ic_camera_alt_black_24dp"
+        android:focusable="false"
+        android:layout_weight=".5"
+        android:layout_width="32dp"
+        android:layout_height="32dp" />
+
+    <ImageButton
+        android:id="@+id/choose"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        android:layout_gravity="center_vertical"
+        android:background="@null"
+        android:src="@drawable/ic_folder_open_black_24dp"
+        android:focusable="false"
+        android:layout_weight=".5"
+        android:layout_width="32dp"
+        android:layout_height="32dp" />
+
+
+    <ImageButton
+        android:visibility="gone"
+        android:id="@+id/cancel"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        android:focusable="false"
+        android:layout_gravity="center_vertical"
+        android:background="@null"
+        android:src="@drawable/ic_cancel_black_24dp"
+        android:layout_weight=".5"
+        android:layout_width="32dp"
+        android:layout_height="32dp" />
+
+
+
+
+</LinearLayout>
