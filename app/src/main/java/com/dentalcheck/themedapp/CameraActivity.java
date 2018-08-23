@@ -4,6 +4,7 @@ package com.dentalcheck.themedapp;
 import android.Manifest.permission;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,21 +15,26 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,7 +46,9 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 
 public class CameraActivity extends Activity {
@@ -61,16 +69,19 @@ public class CameraActivity extends Activity {
     //Send images via volley
     private ProgressDialog dialog = null;
     private Button sendForDiagnosis;
-    private JSONObject jsonObject;
-    ArrayList<Uri> imagesUriList;
-    ArrayList<String> encodedImageList;
-    String imageURI;
+    private JSONObject params,params2;
+
+    private static final String TAG = CameraActivity.class.getName(); // used for debuging
+    private RequestQueue mRequestQueue;
+    private static final String urlUpload = "http://192.168.20.106:3000/uploadfiles";
     String picturePath;
 
     //firebase
     FirebaseAuth mAuth;
     FirebaseUser user;
     DatabaseReference picRef;
+
+    ArrayList imagesPath;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,8 +119,13 @@ public class CameraActivity extends Activity {
         }
         cameraAdapter = new CameraAdapter(getSets, this);
         listView.setAdapter(cameraAdapter);
+        params = new JSONObject();
+        params2 = new JSONObject();
 
-
+        imagesPath = new ArrayList();
+        //RequestQueue initialized
+        mRequestQueue = Volley.newRequestQueue(this);
+        mRequestQueue.start();
     }
 
 
@@ -228,10 +244,11 @@ public class CameraActivity extends Activity {
 
         if (requestCode == 101 && resultCode != Activity.RESULT_CANCELED) {
             onCaptureImageResult(data);
+            imagesPath.add(picturePath);
 
         } else if (requestCode == 102) {
             onChooseImageResult(data);
-            System.out.println("Nedu's picture path 3  " + picturePath);
+            imagesPath.add(picturePath);
         }
 
 
@@ -261,67 +278,79 @@ public class CameraActivity extends Activity {
     }
 
     public void SendRequests() {
-        JSONArray jsonArray = new JSONArray();
+        Calendar friendshipStartDate = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MMMM/yyyy");
+        final String currentdate = dateFormat.format(friendshipStartDate.getTime());
 
-        if (encodedImageList.isEmpty()) {
-            Toast.makeText(this, "Please select some images first.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        int patientsNum = (int )(Math.random() * 50 + 1);
+        int i =0;
 
-        for (String encoded : encodedImageList) {
-            jsonArray.put(encoded);
+        JSONArray jsonArrayImagePaths = new JSONArray();
+
+        for (Object encoded: imagesPath){
+            jsonArrayImagePaths.put(encoded);
+            i++;
         }
 
         try {
-            /*
-        {
-            "resourceType" : "InputImages",
-
-                "identifier" : 412,
-                "patient" : "p0005",
-                "authoringTime" : "02/05/2018",
-
-                "study" : {
-            "imageType": 1,
-                    "imagingStudy" : "c:/mnp.jpg",
-                    "takingtime" : "02/05/2018"
-        }
-        }*/
-            //jsonObject.put(Utils.imageName, picturePath.trim());
-            jsonObject.put(Utils.imageList, jsonArray);
-            jsonObject.put("resourceType","InputImages");
-            jsonObject.put("patient", "p0005");
-            jsonObject.put("authoringTime", "02/05/2018");
-            jsonObject.put("imageType", "1");
-            jsonObject.put("imagingStudy",  picturePath.trim());
-            jsonObject.put("takingtime", "02/05/2018");
-
+            params.put("resourceType", "InputImages");
+            params.put("patient", "p000"+patientsNum);
+            params.put("authoringTime", currentdate);
+            params2.put("imageType", ""+i);
+            params2.put("imagingStudy", jsonArrayImagePaths);
+            params2.put("takingtime", currentdate);
+            params.put("study", params2);
         } catch (JSONException e) {
             Log.e("JSONObject Here", e.toString());
         }
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Utils.urlUpload, jsonObject,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, urlUpload,
+                params,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject jsonObject) {
                         Log.e("Message from server", jsonObject.toString());
+                      try {
+                          String jsonString = jsonObject.toString();
+                          JSONObject obj1 = new JSONObject(jsonString);
+                          String resourceType = obj1.getString("resourceType");
+
+                          JSONObject obj2 = new JSONObject(jsonString);
+                          String patient = obj2.getString("patient");
+
+                          JSONObject obj3 = new JSONObject(jsonString);
+                         /* String predictedResult = obj3.getString("predictedResult");*/
+                          JSONArray array=obj3.getJSONArray("predictedResult");
+                          for (int i = 0; i < array.length(); i++) {
+                              JSONObject obj4 = array.getJSONObject(i);
+                              System.out.println("The Image Type : " + obj3.getString("imageType")
+                                      + " estimation: " + obj4.getString("estimation")
+                                      + " disease_name: " + obj4.getString("disease_name")
+                                      + " description: " + obj4.getString("description"));
+
+
+                          }
+                      }
+                      catch(Exception e){}
+
                         dialog.dismiss();
-                        toastMessage("Images Uploaded Successfully");
-                    }
+                        toastMessage("Image Uploaded Successfully");
+                             }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 Log.e("Message from server", volleyError.toString());
-                Toast.makeText(getApplication(), "Error Occurred", Toast.LENGTH_SHORT).show();
+                toastMessage(volleyError.toString());
                 dialog.dismiss();
             }
         });
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(200 * 30000,
+        //queue request intialisation and policy
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        Volley.newRequestQueue(this).add(jsonObjectRequest);
-
-
+        //Volley.newRequestQueue(this).add(jsonObjectRequest);
+        mRequestQueue.add(jsonObjectRequest);
     }
+
 
     private void toastMessage(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();

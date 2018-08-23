@@ -51,6 +51,7 @@ public class OtherUserProfileActivity extends Activity {
         FriendsRef = FirebaseDatabase.getInstance().getReference().child("Friends");
         FriendsRef.keepSynced(true);
         notificationsRef = FirebaseDatabase.getInstance().getReference().child("Notifications");
+        notificationsRef.keepSynced(true);
 
 
         FRIEND_STATUS = "not_friends";
@@ -234,14 +235,19 @@ public class OtherUserProfileActivity extends Activity {
                                         HashMap<String,String> notificationInfo = new HashMap<>();
                                         notificationInfo.put("from",currentUserID);
                                         notificationInfo.put("type","request");
-                                        notificationsRef.child(receiverID).push().setValue(notificationInfo);
-                                        sendrequest.setEnabled(true);
+                                        notificationsRef.child(receiverID).push().setValue(notificationInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if(task.isSuccessful()){
+                                                    sendrequest.setEnabled(true);
+                                                    FRIEND_STATUS = "request_sent";
+                                                    sendrequest.setText("Cancel Friend Request");
+                                                    delete.setVisibility(View.INVISIBLE);
+                                                    delete.setEnabled(false);
+                                                }
+                                            }
+                                        });
 
-
-                                        FRIEND_STATUS = "request_sent";
-                                        sendrequest.setText("Cancel Friend Request");
-                                        delete.setVisibility(View.INVISIBLE);
-                                        delete.setEnabled(false);
                                     }
                                 }
                             });
